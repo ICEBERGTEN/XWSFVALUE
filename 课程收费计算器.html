@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程收费计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体（教育行业主题） -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB', // 专业蓝 - 教育行业信任色
+                        secondary: '#10B981', // 成长绿 - 代表进步与活力
+                        accent: '#F59E0B', // 活力橙 - 突出重点
+                        neutral: '#64748B', // 中性灰 - 辅助文字
+                        light: '#F8FAFC',
+                        card: '#FFFFFF',
+                        'card-hover': '#F1F5F9'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'Segoe UI', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .shadow-edu {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+            .gradient-edu {
+                background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none;
+            }
+            .btn-hover {
+                @apply hover:shadow-md hover:-translate-y-0.5 transition-all duration-200;
+            }
+            .price-input {
+                @apply w-20 text-right border-b border-gray-200 py-1 px-2 focus:border-primary focus:outline-none text-sm;
+            }
+            .stat-item {
+                @apply flex-1 text-center px-3 py-3 rounded-lg transition-all duration-200 hover:shadow-sm;
+            }
+            .edu-card {
+                @apply bg-card rounded-xl shadow-edu transition-all duration-300 hover:shadow-lg;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+    <!-- 顶部导航 - 教育风格头部 -->
+    <nav class="gradient-edu text-white shadow-md">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-book-open text-2xl"></i> <!-- 教育类图标 -->
+                    <h1 class="text-xl font-bold">课程收费计算器</h1>
+                </div>
+                <div class="text-sm opacity-90 flex items-center">
+                    <i class="fas fa-graduation-cap mr-1"></i> <!-- 毕业帽图标 -->
+                    专业课程费用计算工具
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- 主内容区 -->
+        <div class="space-y-6 max-w-3xl mx-auto"> <!-- 限制最大宽度，提升阅读体验 -->
+            <!-- 顶部：时间选择和费用展示 -->
+            <div class="space-y-6" id="topSection">
+                <!-- 时间范围设置 -->
+                <div class="edu-card p-6">
+                    <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                        <i class="fas fa-calendar-check text-primary mr-3"></i>
+                        时间范围设置
+                    </h2>
+                    
+                    <form id="timeForm" class="space-y-6">
+                        <div class="space-y-2">
+                            <label for="startDate" class="block text-sm font-medium text-slate-700">
+                                开始日期
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-calendar text-slate-400"></i>
+                                </div>
+                                <input type="date" id="startDate" 
+                                    class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg input-focus bg-white">
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="endDate" class="block text-sm font-medium text-slate-700">
+                                结束日期
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-calendar text-slate-400"></i>
+                                </div>
+                                <input type="date" id="endDate" 
+                                    class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg input-focus bg-white">
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="calculateBtn" 
+                            class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 btn-hover flex items-center justify-center">
+                            <i class="fas fa-calculator mr-2"></i>
+                            计算课程费用
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- 费用展示 -->
+                <div class="edu-card p-6">
+                    <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                        <i class="fas fa-receipt text-accent mr-3"></i>
+                        费用明细
+                    </h2>
+                    
+                    <div class="space-y-4" id="pricePlans">
+                        <!-- 单报收费 -->
+                        <div class="border border-slate-100 rounded-lg overflow-hidden transition-all duration-200 hover:border-slate-200">
+                            <div class="bg-slate-50 px-4 py-3 border-b border-slate-100">
+                                <h3 class="font-semibold text-slate-800 flex items-center">
+                                    <i class="fas fa-user text-sm mr-2 text-primary"></i>
+                                    单报收费
+                                </h3>
+                            </div>
+                            <div class="p-4 space-y-3">
+                                <div class="flex justify-between items-center p-2 hover:bg-card-hover rounded transition-colors">
+                                    <div>
+                                        <span class="font-medium">周二至周五</span>
+                                        <span class="text-sm text-slate-500 ml-2">× <span id="weekdayPriceCount">0</span>天</span>
+                                    </div>
+                                    <div class="text-primary font-bold">¥<span id="weekdayTotal">0</span></div>
+                                </div>
+                                <div class="flex justify-between items-center p-2 hover:bg-card-hover rounded transition-colors">
+                                    <div>
+                                        <span class="font-medium">周末双时段</span>
+                                        <span class="text-sm text-slate-500 ml-2">（周六×<span id="weekendSatCount">0</span> + 周日×<span id="weekendSunCount">0</span>）</span>
+                                    </div>
+                                    <div class="text-primary font-bold">¥<span id="weekendDoubleTotal">0</span></div>
+                                </div>
+                                <div class="flex justify-between items-center p-2 hover:bg-card-hover rounded transition-colors">
+                                    <div>
+                                        <span class="font-medium">周六单时段</span>
+                                        <span class="text-sm text-slate-500 ml-2">× <span id="saturdayPriceCount">0</span>天</span>
+                                    </div>
+                                    <div class="text-primary font-bold">¥<span id="saturdayTotal">0</span></div>
+                                </div>
+                                <div class="flex justify-between items-center p-2 hover:bg-card-hover rounded transition-colors">
+                                    <div>
+                                        <span class="font-medium">周日单时段</span>
+                                        <span class="text-sm text-slate-500 ml-2">× <span id="sundayPriceCount">0</span>天</span>
+                                    </div>
+                                    <div class="text-primary font-bold">¥<span id="sundayTotal">0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 联报收费 -->
+                        <div class="border border-slate-100 rounded-lg overflow-hidden transition-all duration-200 hover:border-slate-200">
+                            <div class="bg-slate-50 px-4 py-3 border-b border-slate-100">
+                                <h3 class="font-semibold text-slate-800 flex items-center">
+                                    <i class="fas fa-users text-sm mr-2 text-secondary"></i>
+                                    联报收费
+                                </h3>
+                            </div>
+                            <div class="p-4 space-y-3">
+                                <div class="flex justify-between items-center p-2 hover:bg-card-hover rounded transition-colors">
+                                    <div>
+                                        <span class="font-medium">周中+周六单</span>
+                                        <span class="text-sm text-slate-500 ml-2">× <span id="combo1DayCount">0</span>天</span>
+                                    </div>
+                                    <div class="text-secondary font-bold">¥<span id="combo1Total">0</span></div>
+                                </div>
+                                <div class="flex justify-between items-center p-2 hover:bg-card-hover rounded transition-colors">
+                                    <div>
+                                        <span class="font-medium">周中+周日单</span>
+                                        <span class="text-sm text-slate-500 ml-2">× <span id="combo2DayCount">0</span>天</span>
+                                    </div>
+                                    <div class="text-secondary font-bold">¥<span id="combo2Total">0</span></div>
+                                </div>
+                                <div class="flex justify-between items-center p-2 hover:bg-card-hover rounded transition-colors">
+                                    <div>
+                                        <span class="font-medium">周中+周末双</span>
+                                        <span class="text-sm text-slate-500 ml-2">× <span id="combo3DayCount">0</span>天</span>
+                                    </div>
+                                    <div class="text-secondary font-bold">¥<span id="combo3Total">0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 紧凑的天数统计（一行显示） -->
+                <div class="edu-card p-5">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-pie text-secondary mr-2"></i>
+                        天数统计
+                    </h2>
+                    
+                    <div class="flex flex-wrap gap-3" id="daysStats">
+                        <div class="stat-item bg-blue-50 border border-blue-100">
+                            <div class="text-lg font-bold text-primary" id="weekdayCount">0</div>
+                            <div class="text-xs text-slate-600">周二至周五</div>
+                        </div>
+                        <div class="stat-item bg-green-50 border border-green-100">
+                            <div class="text-lg font-bold text-secondary" id="weekendDoubleCount">0</div>
+                            <div class="text-xs text-slate-600">周末双时段</div>
+                        </div>
+                        <div class="stat-item bg-amber-50 border border-amber-100">
+                            <div class="text-lg font-bold text-accent" id="saturdayCount">0</div>
+                            <div class="text-xs text-slate-600">周六单时段</div>
+                        </div>
+                        <div class="stat-item bg-purple-50 border border-purple-100">
+                            <div class="text-lg font-bold text-purple-600" id="sundayCount">0</div>
+                            <div class="text-xs text-slate-600">周日单时段</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 显示价格设置按钮 -->
+                <button type="button" id="togglePriceSettingsBtn" 
+                    class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium py-2.5 px-6 rounded-lg transition-all duration-300 btn-hover flex items-center justify-center">
+                    <i class="fas fa-chevron-down mr-2" id="toggleIcon"></i>
+                    <span id="toggleText">显示价格设置</span>
+                </button>
+            </div>
+            
+            <!-- 价格设置（默认隐藏） -->
+            <div class="space-y-6" id="priceSettingsSection" style="display: none;">
+                <div class="edu-card p-5">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                        <i class="fas fa-tags text-accent mr-3"></i>
+                        价格设置（可编辑）
+                    </h2>
+                    <p class="text-xs text-slate-500 mb-4">修改价格后将自动重新计算费用</p>
+                    
+                    <!-- 单报价格 -->
+                    <div class="mb-5">
+                        <h3 class="text-base font-medium text-slate-700 mb-3 flex items-center">
+                            <i class="fas fa-user-circle text-xs mr-2 text-primary"></i>
+                            单报价格
+                        </h3>
+                        <div class="space-y-2.5 text-sm">
+                            <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg">
+                                <span>周二至周五</span>
+                                <div class="flex items-center">
+                                    <input type="number" id="priceWeekday" value="40" min="0" 
+                                        class="price-input" data-type="price">
+                                    <span class="ml-1">元/天</span>
+                                </div>
+                            </div>
+                            <div class="p-2.5 bg-slate-50 rounded-lg">
+                                <div class="font-medium mb-1.5 text-sm">周末双时段</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                    <div class="flex justify-between items-center">
+                                        <span>周六（双时段）</span>
+                                        <div class="flex items-center">
+                                            <input type="number" id="priceWeekendSaturday" value="160" min="0" 
+                                                class="price-input" data-type="price">
+                                            <span class="ml-1">元/天</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>周日（双时段）</span>
+                                        <div class="flex items-center">
+                                            <input type="number" id="priceWeekendSunday" value="100" min="0" 
+                                                class="price-input" data-type="price">
+                                            <span class="ml-1">元/天</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg">
+                                <span>周六单时段</span>
+                                <div class="flex items-center">
+                                    <input type="number" id="priceSaturday" value="160" min="0" 
+                                        class="price-input" data-type="price">
+                                    <span class="ml-1">元/天</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg">
+                                <span>周日单时段</span>
+                                <div class="flex items-center">
+                                    <input type="number" id="priceSunday" value="160" min="0" 
+                                        class="price-input" data-type="price">
+                                    <span class="ml-1">元/天</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 联报价格设置 -->
+                    <div>
+                        <h3 class="text-base font-medium text-slate-700 mb-3 flex items-center">
+                            <i class="fas fa-users text-xs mr-2 text-secondary"></i>
+                            联报价格设置
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <!-- 周中+周六单时段 -->
+                            <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                                <div class="font-medium mb-1.5 text-sm">周中+周六单时段</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                    <div class="flex justify-between items-center">
+                                        <span>周二至周五（联报）</span>
+                                        <div class="flex items-center">
+                                            <input type="number" id="priceCombo1Weekday" value="40" min="0" 
+                                                class="price-input" data-type="combo">
+                                            <span class="ml-1">元/天</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>周六单时段（联报）</span>
+                                        <div class="flex items-center">
+                                            <input type="number" id="priceCombo1Saturday" value="100" min="0" 
+                                                class="price-input" data-type="combo">
+                                            <span class="ml-1">元/天</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 周中+周日单时段 -->
+                            <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                                <div class="font-medium mb-1.5 text-sm">周中+周日单时段</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                    <div class="flex justify-between items-center">
+                                        <span>周二至周五（联报）</span>
+                                        <div class="flex items-center">
+                                            <input type="number" id="priceCombo2Weekday" value="40" min="0" 
+                                                class="price-input" data-type="combo">
+                                            <span class="ml-1">元/天</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span>周日单时段（联报）</span>
+                                        <div class="flex items-center">
+                                            <input type="number" id="priceCombo2Sunday" value="100" min="0" 
+                                                class="price-input" data-type="combo">
+                                            <span class="ml-1">元/天</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 周中+周末双时段 -->
+                            <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                                <div class="font-medium mb-1.5 text-sm">周中+周末双时段</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                    <div class="flex justify-between items-center">
+                                        <span>周二至周五（联报）</span>
+                                        <div class="flex items-center">
+                                            <input type="number" id="priceCombo3Weekday" value="40" min="0" 
+                                                class="price-input" data-type="combo">
+                                            <span class="ml-1">元/天</span>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 gap-2.5">
+                                        <div class="flex justify-between items-center">
+                                            <span>周六（双时段联报）</span>
+                                            <div class="flex items-center">
+                                                <input type="number" id="priceCombo3WeekendSat" value="100" min="0" 
+                                                    class="price-input" data-type="combo">
+                                                <span class="ml-1">元/天</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span>周日（双时段联报）</span>
+                                            <div class="flex items-center">
+                                                <input type="number" id="priceCombo3WeekendSun" value="100" min="0" 
+                                                    class="price-input" data-type="combo">
+                                                <span class="ml-1">元/天</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 - 教育风格 -->
+    <footer class="bg-slate-800 text-white py-6 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex items-center justify-center mb-2">
+                <i class="fas fa-book text-lg mr-2"></i>
+                <span class="font-medium">课程收费计算器</span>
+            </div>
+            <p class="text-sm opacity-80">
+                <i class="fas fa-copyright mr-1"></i>
+                专业教育机构费用计算工具 | 精准高效的课程定价辅助
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 配置常量 - 集中管理默认值和选择器
+        const CONFIG = {
+            defaultEndDate: new Date(2026, 0, 15), // 2026-01-15
+            defaultPrices: {
+                priceWeekday: 40,
+                priceWeekendSaturday: 160,  // 周末双时段周六
+                priceWeekendSunday: 100,    // 周末双时段周日
+                priceSaturday: 160,         // 周六单时段
+                priceSunday: 160,           // 周日单时段
+                priceCombo1Weekday: 40,
+                priceCombo1Saturday: 100,   // 周中+周六单时段（联报周六）
+                priceCombo2Weekday: 40,
+                priceCombo2Sunday: 100,     // 周中+周日单时段（联报周日）
+                priceCombo3Weekday: 40,
+                priceCombo3WeekendSat: 100, // 联报周末双时段周六
+                priceCombo3WeekendSun: 100  // 联报周末双时段周日
+            },
+            selectors: {
+                startDate: '#startDate',
+                endDate: '#endDate',
+                calculateBtn: '#calculateBtn',
+                togglePriceSettingsBtn: '#togglePriceSettingsBtn',
+                priceSettingsSection: '#priceSettingsSection',
+                toggleIcon: '#toggleIcon',
+                toggleText: '#toggleText',
+                priceInputs: '[data-type="price"], [data-type="combo"]',
+                // 天数统计元素
+                weekdayCount: '#weekdayCount',
+                weekendDoubleCount: '#weekendDoubleCount',
+                saturdayCount: '#saturdayCount',
+                sundayCount: '#sundayCount',
+                // 价格计算元素
+                weekdayPriceCount: '#weekdayPriceCount',
+                weekdayTotal: '#weekdayTotal',
+                weekendSatCount: '#weekendSatCount',
+                weekendSunCount: '#weekendSunCount',
+                weekendDoubleTotal: '#weekendDoubleTotal',
+                saturdayPriceCount: '#saturdayPriceCount',
+                saturdayTotal: '#saturdayTotal',
+                sundayPriceCount: '#sundayPriceCount',
+                sundayTotal: '#sundayTotal',
+                combo1DayCount: '#combo1DayCount',
+                combo1Total: '#combo1Total',
+                combo2DayCount: '#combo2DayCount',
+                combo2Total: '#combo2Total',
+                combo3DayCount: '#combo3DayCount',
+                combo3Total: '#combo3Total'
+            }
+        };
+
+        // 全局状态管理
+        const state = {
+            daysStats: {
+                weekday: 0,
+                weekendDouble: 0,
+                saturday: 0,
+                sunday: 0
+            }
+        };
+
+        // DOM工具函数
+        const DOM = {
+            get: (selector) => document.querySelector(selector),
+            getAll: (selector) => document.querySelectorAll(selector),
+            setText: (selector, text) => {
+                const el = DOM.get(selector);
+                if (el) el.textContent = text;
+            },
+            setValue: (selector, value) => {
+                const el = DOM.get(selector);
+                if (el) el.value = value;
+            },
+            on: (selector, event, handler) => {
+                const el = DOM.get(selector);
+                if (el) el.addEventListener(event, handler);
+            }
+        };
+
+        // 初始化函数
+        function init() {
+            // 设置默认日期
+            const today = new Date();
+            DOM.setValue(CONFIG.selectors.startDate, formatDate(today));
+            DOM.setValue(CONFIG.selectors.endDate, formatDate(CONFIG.defaultEndDate));
+            
+            // 绑定事件
+            DOM.on(CONFIG.selectors.calculateBtn, 'click', calculate);
+            DOM.on(CONFIG.selectors.togglePriceSettingsBtn, 'click', togglePriceSettings);
+            
+            // 事件委托处理价格输入框变化
+            DOM.get('body').addEventListener('input', (e) => {
+                if (e.target.matches(CONFIG.selectors.priceInputs)) {
+                    handlePriceChange(e.target);
+                }
+            });
+            
+            // 初始计算
+            calculate();
+        }
+        
+        // 切换价格设置显示/隐藏
+        function togglePriceSettings() {
+            const section = DOM.get(CONFIG.selectors.priceSettingsSection);
+            const icon = DOM.get(CONFIG.selectors.toggleIcon);
+            const text = DOM.get(CONFIG.selectors.toggleText);
+            
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                text.textContent = '隐藏价格设置';
+            } else {
+                section.style.display = 'none';
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                text.textContent = '显示价格设置';
+            }
+        }
+        
+        // 处理价格变化
+        function handlePriceChange(input) {
+            // 确保输入值有效
+            if (input.value === '' || isNaN(input.value) || parseFloat(input.value) < 0) {
+                input.value = CONFIG.defaultPrices[input.id] || 0;
+            }
+            
+            // 重新计算价格
+            updatePriceCalculation();
+        }
+        
+        // 格式化日期为input格式 (YYYY-MM-DD)
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}`;
+        }
+        
+        // 计算函数
+        function calculate() {
+            // 获取开始和结束日期
+            const startDate = new Date(DOM.get(CONFIG.selectors.startDate).value);
+            const endDate = new Date(DOM.get(CONFIG.selectors.endDate).value);
+            
+            // 设置时间为当天结束，确保完整计算最后一天
+            endDate.setHours(23, 59, 59, 999);
+            
+            // 验证日期
+            if (startDate >= endDate) {
+                alert('结束日期必须晚于开始日期');
+                return;
+            }
+            
+            // 计算天数并更新状态
+            state.daysStats = calculateDays(startDate, endDate);
+            
+            // 更新天数显示
+            DOM.setText(CONFIG.selectors.weekdayCount, state.daysStats.weekday);
+            DOM.setText(CONFIG.selectors.weekendDoubleCount, state.daysStats.weekendDouble);
+            DOM.setText(CONFIG.selectors.saturdayCount, state.daysStats.saturday);
+            DOM.setText(CONFIG.selectors.sundayCount, state.daysStats.sunday);
+            
+            // 更新价格计算
+            updatePriceCalculation();
+        }
+        
+        // 计算不同类型的天数
+        function calculateDays(startDate, endDate) {
+            let stats = {
+                weekday: 0,    // 周二至周五
+                weekendDouble: 0, // 周末双时段总天数（周六+周日）
+                saturday: 0,   // 周六天数
+                sunday: 0      // 周日天数
+            };
+            
+            // 克隆日期对象，避免修改原始日期
+            const currentDate = new Date(startDate);
+            
+            // 循环计算每一天
+            while (currentDate <= endDate) {
+                const dayOfWeek = currentDate.getDay(); // 0是周日，1-6是周一到周六
+                
+                if (dayOfWeek >= 2 && dayOfWeek <= 5) {
+                    stats.weekday++;
+                } else if (dayOfWeek === 6) { // 周六
+                    stats.saturday++;
+                    stats.weekendDouble++;
+                } else if (dayOfWeek === 0) { // 周日
+                    stats.sunday++;
+                    stats.weekendDouble++;
+                }
+                
+                // 增加一天
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            return stats;
+        }
+        
+        // 更新价格计算（从输入框获取价格）
+        function updatePriceCalculation() {
+            // 从输入框获取当前价格
+            const prices = Object.keys(CONFIG.defaultPrices).reduce((acc, key) => {
+                acc[key] = parseFloat(DOM.get(`#${key}`).value) || 0;
+                return acc;
+            }, {});
+            
+            const { weekday, saturday, sunday } = state.daysStats;
+            
+            // 计算单报各项费用
+            const weekdayTotal = weekday * prices.priceWeekday;
+            const weekendDoubleTotal = (saturday * prices.priceWeekendSaturday) + (sunday * prices.priceWeekendSunday);
+            const saturdayTotal = saturday * prices.priceSaturday;
+            const sundayTotal = sunday * prices.priceSunday;
+            
+            // 计算联报组合数量（取最小天数作为组合数量）
+            const combo1Count = Math.min(weekday, saturday);
+            const combo2Count = Math.min(weekday, sunday);
+            const combo3Count = Math.min(weekday, saturday + sunday); // 周末双时段总天数
+            
+            // 计算联报各项费用
+            const combo1Total = (prices.priceCombo1Weekday + prices.priceCombo1Saturday) * combo1Count;
+            const combo2Total = (prices.priceCombo2Weekday + prices.priceCombo2Sunday) * combo2Count;
+            const combo3Total = (prices.priceCombo3Weekday * combo3Count) + 
+                              (saturday * prices.priceCombo3WeekendSat) + 
+                              (sunday * prices.priceCombo3WeekendSun);
+            
+            // 更新页面显示 - 单报
+            DOM.setText(CONFIG.selectors.weekdayPriceCount, weekday);
+            DOM.setText(CONFIG.selectors.weekdayTotal, weekdayTotal.toLocaleString());
+            
+            DOM.setText(CONFIG.selectors.weekendSatCount, saturday);
+            DOM.setText(CONFIG.selectors.weekendSunCount, sunday);
+            DOM.setText(CONFIG.selectors.weekendDoubleTotal, weekendDoubleTotal.toLocaleString());
+            
+            DOM.setText(CONFIG.selectors.saturdayPriceCount, saturday);
+            DOM.setText(CONFIG.selectors.saturdayTotal, saturdayTotal.toLocaleString());
+            
+            DOM.setText(CONFIG.selectors.sundayPriceCount, sunday);
+            DOM.setText(CONFIG.selectors.sundayTotal, sundayTotal.toLocaleString());
+            
+            // 更新页面显示 - 联报
+            DOM.setText(CONFIG.selectors.combo1DayCount, combo1Count);
+            DOM.setText(CONFIG.selectors.combo1Total, combo1Total.toLocaleString());
+            
+            DOM.setText(CONFIG.selectors.combo2DayCount, combo2Count);
+            DOM.setText(CONFIG.selectors.combo2Total, combo2Total.toLocaleString());
+            
+            DOM.setText(CONFIG.selectors.combo3DayCount, combo3Count);
+            DOM.setText(CONFIG.selectors.combo3Total, combo3Total.toLocaleString());
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
