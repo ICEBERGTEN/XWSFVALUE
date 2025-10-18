@@ -397,14 +397,24 @@
 
     <!-- 页脚 - 教育风格 -->
     <footer class="bg-slate-800 text-white py-6 mt-16">
-        <div class="container mx-auto px-6 text-center">
-            <div class="flex items-center justify-center mb-2">
-                <span class="font-medium">价格计算仅供参考</span>
-            </div>
-            <p class="text-sm opacity-80">
-                42中半岛一号店 | Designed by ICEBERGTEN ＆ Doubao
-            </p>
+    <div class="container mx-auto px-6 text-center">
+        <!-- 新增统计代码开始 -->
+        <div class="mb-3 text-sm">
+            <span>总访问量：<span id="busuanzi_value_site_pv"></span> 次</span>
+            <span class="mx-2">|</span>
+            <span>独立访客：<span id="busuanzi_value_site_uv"></span> 位</span>
         </div>
+        <!-- 访问统计代码结束 -->
+        
+        <div class="flex items-center justify-center mb-2">
+            <span class="font-medium">价格计算仅供参考</span>
+        </div>
+        <p class="text-sm opacity-80">
+            42中半岛一号店 | Designed by ICEBERGTEN ＆ Doubao
+        </p>
+    </div>
+    <!-- 不蒜子脚本放在页脚底部，避免阻塞页面加载 -->
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
     </footer>
 
     <script>
